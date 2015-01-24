@@ -1,5 +1,3 @@
-package com.company;
-
 /**
  * Created by vi34 on 08.10.14.
  */
@@ -65,23 +63,23 @@ public class ExpressionParser {
         Expression res = parseBraces(s);
 
         while (res.rest.length() != 0) {
-           String oper = res.rest.substring(0,1);
-           if(!oper.equals("&")) {
-               return res;
-           }
-           String next = res.rest.substring(1);
-           Expression right = parseBraces(next);
+            String oper = res.rest.substring(0,1);
+            if(!oper.equals("&")) {
+                return res;
+            }
+            String next = res.rest.substring(1);
+            Expression right = parseBraces(next);
 
-           Expression left = res;
-           res = new Expression();
-           res.first = left;
-           res.second = right;
-           res.rest = right.rest;
-           res.oper = "&";
-           res.representation = "(" + res.first.representation + "&" + res.second.representation + ")";
-           res.inBraces = true;
+            Expression left = res;
+            res = new Expression();
+            res.first = left;
+            res.second = right;
+            res.rest = right.rest;
+            res.oper = "&";
+            res.representation = "(" + res.first.representation + "&" + res.second.representation + ")";
+            res.inBraces = true;
 
-         }
+        }
         return res;
     }
 
