@@ -1,0 +1,7 @@
+ A|-A
+
+  @x(x=c->a=x)->(a=c->a=a)
+ (a=b->a=c->b=c)->(b+0=b)->a=b->a=c->b=c
+  @x(x=c->a=x)->(c=c->a=a)
+ @x(x=x->!(@y(y=x)))->(y=y->!(@y(y=y)))
+  f1(x+x,y*y)=f1(0,y*0)
