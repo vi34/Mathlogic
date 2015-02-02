@@ -26,6 +26,8 @@ public class ExpressionParser {
                 res.rest = right.rest;
                 res.oper = "->";
                 res.representation = res.first.representation + "->" + res.second.representation;
+                res.freeVariables.addAll(res.first.freeVariables);
+                res.freeVariables.addAll(res.second.freeVariables);
 
             }
             if (!res.inBraces) {
@@ -66,7 +68,7 @@ public class ExpressionParser {
     }
 
     public Expression conjunction(String s) {
-        Expression res = parseBraces(s);
+        Expression res = unary(s);
 
         while (res.rest.length() != 0) {
             String oper = res.rest.substring(0,1);
@@ -74,7 +76,7 @@ public class ExpressionParser {
                 return res;
             }
             String next = res.rest.substring(1);
-            Expression right = parseBraces(next);
+            Expression right = unary(next);
 
             Expression left = res;
             res = new Expression();
@@ -89,37 +91,15 @@ public class ExpressionParser {
         return res;
     }
 
-    public Expression parseBraces(String s) {
-        if(s.charAt(0) == '(') {
-            int i = 1;
-            int countBrace = 1;
-            for(;countBrace != 0;i++) {
-                if(s.charAt(i) == '(') {
-                    countBrace++;
-                }
-                if(s.charAt(i) == ')') {
-                    countBrace--;
-                }
-            }
-
-            Expression res = parse(s.substring(1, i - 1));
-            res.rest = s.substring(i);
-            if(!res.inBraces) {
-                res.representation = "(" + res.representation + ")";
-                res.inBraces = true;
-            }
-            return res;
-        }
-        return unary(s);
-    }
 
     public Expression unary(String s) {
         if(s.charAt(0) == '!') {
             Expression res = new Expression();
-            res.first = parseBraces(s.substring(1));
+            res.first = unary(s.substring(1));
             res.representation = "!" + res.first.representation;
             res.oper = "!";
             res.rest = res.first.rest;
+            res.freeVariables = res.first.freeVariables;
             res.inBraces = res.first.inBraces;
             return res;
         } else if(s.charAt(0) == '@' || s.charAt(0) == '?') {
@@ -131,11 +111,32 @@ public class ExpressionParser {
             }
             res.oper = Character.toString(s.charAt(0));
             res.first = variable(s.substring(1));
-            res.second = parseBraces(res.first.rest);
+            res.second = unary(res.first.rest);
             res.representation = res.oper + res.first.representation + res.second.representation;
             res.rest = res.second.rest;
             res.freeVariables.addAll(res.second.freeVariables);
             res.freeVariables.remove(res.first.representation);
+            return res;
+        } else if(s.charAt(0) == '(') {
+            int i = 1;
+            int countBrace = 1;
+            for(;countBrace != 0;i++) {
+                if(s.charAt(i) == '(') {
+                    countBrace++;
+                }
+                if(s.charAt(i) == ')') {
+                    countBrace--;
+                }
+            }
+            if(s.length() > i && s.substring(i).charAt(0) == '=') {
+                return predicate(s);
+            }
+            Expression res = parse(s.substring(1, i - 1));
+            res.rest = s.substring(i);
+            if(!res.inBraces) {
+                res.representation = "(" + res.representation + ")";
+                res.inBraces = true;
+            }
             return res;
         }
         return predicate(s);
@@ -153,16 +154,17 @@ public class ExpressionParser {
             res.representation = res.oper;
             res.rest = s.substring(i);
             if(i < s.length() && s.charAt(i) == '(') {
-                res.rest = res.rest.substring(1);
                 res.terms = new ArrayList<Expression>();
                do {
-                    res.terms.add(term(res.rest));
-                    res.rest = res.terms.get(res.terms.size() - 1).rest;
+                   res.terms.add(term(res.rest.substring(1)));
+                   res.freeVariables.addAll(res.terms.get(res.terms.size() - 1).freeVariables);
+                   res.rest = res.terms.get(res.terms.size() - 1).rest;
                 }  while(res.rest != null && (res.rest.charAt(0) == ','));
                 res.rest = res.rest.substring(1);
                 res.representation += "(";
                 for(int j = 0; j < res.terms.size() - 1; ++j) {
                     res.representation += res.terms.get(j).representation + ",";
+
                 }
                 res.representation += res.terms.get(res.terms.size() - 1).representation + ")";
             }
@@ -194,6 +196,8 @@ public class ExpressionParser {
             res.second = right;
             res.rest = right.rest;
             res.oper = "+";
+            res.freeVariables.addAll(res.first.freeVariables);
+            res.freeVariables.addAll(res.second.freeVariables);
             res.representation = "(" + res.first.representation + "+" + res.second.representation + ")";
             res.inBraces = true;
         }
@@ -214,6 +218,8 @@ public class ExpressionParser {
             res.second = right;
             res.rest = right.rest;
             res.oper = "*";
+            res.freeVariables.addAll(res.first.freeVariables);
+            res.freeVariables.addAll(res.second.freeVariables);
             res.representation = "(" + res.first.representation + "*" + res.second.representation + ")";
             res.inBraces = true;
 
@@ -247,6 +253,7 @@ public class ExpressionParser {
                 res.terms = new ArrayList<Expression>();
                 do {
                     res.terms.add(term(res.rest.substring(1)));
+                    res.freeVariables.addAll(res.terms.get(res.terms.size() - 1).freeVariables);
                     res.rest = res.terms.get(res.terms.size() - 1).rest;
                 }  while(res.rest != null && (res.rest.charAt(0) == ','));
                 res.rest = res.rest.substring(1);

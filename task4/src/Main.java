@@ -285,6 +285,10 @@ public class Main {
                 opers &= expr.oper.equals("->");
                 opers &= expr.first.oper.equals("@");
                 compareOnSubstitution(expr.first.second, expr.second, expr.first.first.representation);
+                if(opers && correct) {// check substitution error
+                    return 11;
+                }
+
 
             } catch (Exception ignored) {
             }
@@ -299,22 +303,46 @@ public class Main {
         correct = true;
 
         try {
-
+            dfs(a,b,x);
         } catch (Exception e) {
             correct = false;
         }
 
-
         return theta;
     }
 
-    Expression dfs(Expression a, Expression b, String x) {
+    void dfs(Expression a, Expression b, String x) {
         if(!a.freeVariables.contains(x)) {
-            return a;
+            return;
         }
         if(a.first != null) {
             if(a.first.freeVariables.contains(x)) {
                 dfs(a.first,b.first,x);
+            } else if(!a.first.representation.equals(b.first.representation)) {
+                throw null;
+            }
+            if(a.oper.equals("@") || a.oper.equals("!")) {
+                if(a.freeVariables.size() - 1 + theta.freeVariables.size() != b.freeVariables.size()) {
+                    throw null;// not free for substitution
+                }
+            }
+            if(a.second != null) {
+                if(a.second.freeVariables.contains(x)) {
+                    dfs(a.second,b.second,x);
+                } else if(!a.second.representation.equals(b.second.representation)) {
+                    throw null;
+                }
+            }
+        }
+
+        if(a.terms != null) {
+            for(int i = 0; i < a.terms.size(); ++i) {
+                if(a.terms.get(i).freeVariables.contains(x)) {
+                    dfs(a.terms.get(i),b.terms.get(i),x);
+                } else if(!a.terms.get(i).representation.equals(b.terms.get(i).representation)) {
+                    throw null;
+                }
+
             }
         }
 
@@ -323,10 +351,10 @@ public class Main {
                 theta = b;
             } else if(!theta.representation.equals(b.representation)) {
                 correct = false;
+                throw null;
             }
-            return b;
+
         }
-        return null;//
     }
 
     public void run() {
