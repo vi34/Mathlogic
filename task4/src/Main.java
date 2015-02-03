@@ -33,6 +33,7 @@ public class Main {
             s = s.substring(comma + 1);
             comma = s.indexOf(',');
         }
+
         alphaExpr = parser.parse(s.substring(0, s.indexOf("|-")));
         s = s.substring(s.indexOf("|-") + 2);
         bettaExpr = parser.parse(s);
@@ -279,6 +280,35 @@ public class Main {
 
             } catch (Exception ignored) {
             }
+
+        if(expr.representation.equals("(a=b->(a'=b'))")) return 13;
+        if(expr.representation.equals("(a=b->(a=c->(b=c)))")) return 14;
+        if(expr.representation.equals("(a'=b'->(a=b))")) return 15;
+        if(expr.representation.equals("(!a'=0)")) return 16;
+        if(expr.representation.equals("((a+b')=(a+b)')")) return 17;
+        if(expr.representation.equals("((a+0)=a)")) return 18;
+        if(expr.representation.equals("((a*0)=0)")) return 19;
+        if(expr.representation.equals("((a*b')=((a*b)+a))")) return 20;
+
+        // induction (ψ[x := 0])&∀x((ψ) → (ψ)[x := x']) → (ψ)
+        try {
+            opers = true;
+            opers &= expr.oper.equals("->");
+            opers &= expr.first.oper.equals("&");
+            opers &= expr.first.second.oper.equals("@");
+            opers &= expr.first.second.second.oper.equals("->");
+            Expression psi0 = expr.first.first;
+            Expression psi1 = expr.first.second.second.first;
+            Expression psi2 = expr.first.second.second.second;
+            Expression psi3 = expr.second;
+            String x = expr.first.second.first.representation;
+            if(opers && psi1.representation.equals(psi3.representation) && compareOnSubstitution(psi1,psi0,x)
+                    && theta.representation.equals("0") && compareOnSubstitution(psi1,psi2,x) && theta.representation.equals(x + "'") ) {// check substitution error
+                return 21;
+            }
+
+        } catch (Exception ignored) {
+        }
         // axiom 11 ∀x(ψ)->(ψ[x := θ])
             try {
                 opers = true;
@@ -289,16 +319,28 @@ public class Main {
                     return 11;
                 }
 
-
             } catch (Exception ignored) {
             }
+        // axiom 12 (ψ[x := θ]) → ∃x(ψ)
+        try {
+            opers = true;
+            opers &= expr.oper.equals("->");
+            opers &= expr.second.oper.equals("?");
+            compareOnSubstitution(expr.second.second, expr.first, expr.second.first.representation);
+            if(opers && correct) {// check substitution error
+                return 12;
+            }
+
+        } catch (Exception ignored) {
+        }
+
         return 0;
     }
 
     Expression theta = null;
     boolean correct = true;
 
-    Expression compareOnSubstitution(Expression a, Expression b, String x) {
+    boolean compareOnSubstitution(Expression a, Expression b, String x) {
         theta = null;
         correct = true;
 
@@ -307,8 +349,10 @@ public class Main {
         } catch (Exception e) {
             correct = false;
         }
-
-        return theta;
+        if(correct) {
+            return true;
+        }
+        return false;
     }
 
     void dfs(Expression a, Expression b, String x) {

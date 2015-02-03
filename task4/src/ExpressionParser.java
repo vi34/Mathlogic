@@ -144,7 +144,7 @@ public class ExpressionParser {
 
     public Expression predicate(String s) {
         Expression res = new Expression();                      // for schemes
-        if(s.charAt(0) >= 'A' && s.charAt(0) <= 'Z' || (s.charAt(0) > 47 && s.charAt(0) < 58)) {
+        if(s.charAt(0) >= 'A' && s.charAt(0) <= 'Z' || (s.charAt(0) > 48 && s.charAt(0) < 58)) {
             int i = 1;
             while(i < s.length() && s.charAt(i) > 47 && s.charAt(i) < 58)
             {
@@ -235,9 +235,12 @@ public class ExpressionParser {
             res.inBraces = true;
         } else if (s.charAt(0) == '(') {
             res = term(s.substring(1));
-            res.inBraces = true;
             res.rest = res.rest.substring(1);
-            res.representation = "(" + res.representation + ")";
+            if(!res.inBraces) {
+                res.inBraces = true;
+
+                res.representation = "(" + res.representation + ")";
+            }
         } else { // variable or function
             int i = 1;
             while(i < s.length() && s.charAt(i) > 47 && s.charAt(i) < 58)
