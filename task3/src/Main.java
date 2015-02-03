@@ -1,6 +1,3 @@
-/**
- * Created by vi34 on 08.12.14.
- */
 import java.util.*;
 import java.io.*;
 
@@ -36,15 +33,15 @@ public class Main {
         if(answer == null)
             return;
 
-        for(int i = 0; i < answer.size(); ++i) {
-            out.println(answer.get(i).representation);
+        for (Expression anAnswer : answer) {
+            out.println(anAnswer.representation);
         }
     }
 
     Vector<Expression> parseHelper(String[] strings) {
         Vector<Expression> res = new Vector<Expression>();
-        for(int i = 0; i < strings.length; ++i) {
-            res.add(parser.parse(strings[i]));
+        for (String string : strings) {
+            res.add(parser.parse(string));
         }
         return res;
     }
@@ -128,8 +125,8 @@ public class Main {
             Expression etmp1 = parser.parse("1|!1").substitute(forSubstitute);
             forSubstitute.add(etmp1);
             res.add(parser.parse("1->1|!1").substitute(forSubstitute));
-            for(int j = 0; j < contraposition.size(); ++j) {
-                Expression etmp = new Expression(contraposition.get(j));
+            for (Expression aContraposition : contraposition) {
+                Expression etmp = new Expression(aContraposition);
                 res.add(etmp.substitute(forSubstitute));
             }
             res.add(parser.parse("(!2->!1)").substitute(forSubstitute));
@@ -142,8 +139,8 @@ public class Main {
             forSubstitute.add(etmp);
             forSubstitute.add(etmp1);
             res.add(parser.parse("1->2").substitute(forSubstitute));
-            for(int j = 0; j < contraposition.size(); ++j) {
-                etmp = new Expression(contraposition.get(j));
+            for (Expression aContraposition : contraposition) {
+                etmp = new Expression(aContraposition);
                 res.add(etmp.substitute(forSubstitute));
             }
             res.add(parser.parse("(!2->!1)").substitute(forSubstitute));
@@ -196,44 +193,44 @@ public class Main {
                 forSubstitution.add(expression.second);
                 if(expression.oper.equals("->")) {
                     if(s) {
-                        for(int i = 0; i < implication11_01.size(); ++i) {
-                            Expression etmp = new Expression(implication11_01.get(i));
-                                res.add(etmp.substitute(forSubstitution));
+                        for (Expression anImplication11_01 : implication11_01) {
+                            Expression etmp = new Expression(anImplication11_01);
+                            res.add(etmp.substitute(forSubstitution));
                         }
                         return true;
                     }
                     if(f) {
-                        for(int i = 0; i < implication10.size(); ++i) {
-                            Expression etmp = new Expression(implication10.get(i));
+                        for (Expression anImplication10 : implication10) {
+                            Expression etmp = new Expression(anImplication10);
                             res.add(etmp.substitute(forSubstitution));
                         }
                         return false;
                     }
 
-                    for(int i = 0; i < implication00.size(); ++i) {
-                        Expression etmp = new Expression(implication00.get(i));
+                    for (Expression anImplication00 : implication00) {
+                        Expression etmp = new Expression(anImplication00);
                         res.add(etmp.substitute(forSubstitution));
                     }
                     return true;
                 }
                 if(expression.oper.equals("&")) {
                     if(!f) {
-                        for(int i = 0; i < conjunction00_01.size(); ++i) {
-                            Expression etmp = new Expression(conjunction00_01.get(i));
+                        for (Expression aConjunction00_01 : conjunction00_01) {
+                            Expression etmp = new Expression(aConjunction00_01);
                             res.add(etmp.substitute(forSubstitution));
                         }
                         return false;
                     }
                     if(!s) {
-                        for(int i = 0; i < conjunction10.size(); ++i) {
-                            Expression etmp = new Expression(conjunction10.get(i));
+                        for (Expression aConjunction10 : conjunction10) {
+                            Expression etmp = new Expression(aConjunction10);
                             res.add(etmp.substitute(forSubstitution));
                         }
                         return false;
                     }
 
-                    for(int i = 0; i < conjunction11.size(); ++i) {
-                        Expression etmp = new Expression(conjunction11.get(i));
+                    for (Expression aConjunction11 : conjunction11) {
+                        Expression etmp = new Expression(aConjunction11);
                         etmp.substitute(forSubstitution);
                         //etmp.representation += "ALLLLA";
                         res.add(etmp);
@@ -242,22 +239,22 @@ public class Main {
                 }
                 if(expression.oper.equals("|")) {
                     if(f) {
-                        for(int i = 0; i < disjunction10_11.size(); ++i) {
-                            Expression etmp = new Expression(disjunction10_11.get(i));
+                        for (Expression aDisjunction10_11 : disjunction10_11) {
+                            Expression etmp = new Expression(aDisjunction10_11);
                             res.add(etmp.substitute(forSubstitution));
                         }
                         return true;
                     }
                     if(s) {
-                        for(int i = 0; i < disjunction01.size(); ++i) {
-                            Expression etmp = new Expression(disjunction01.get(i));
+                        for (Expression aDisjunction01 : disjunction01) {
+                            Expression etmp = new Expression(aDisjunction01);
                             res.add(etmp.substitute(forSubstitution));
                         }
                         return true;
                     }
 
-                    for(int i = 0; i < disjunction00.size(); ++i) {
-                        Expression etmp = new Expression(disjunction00.get(i));
+                    for (Expression aDisjunction00 : disjunction00) {
+                        Expression etmp = new Expression(aDisjunction00);
                         res.add(etmp.substitute(forSubstitution));
                     }
                     return false;
@@ -270,15 +267,15 @@ public class Main {
                     res.add(etmp.substitute(forSubstitution));
                     return !f;
                 }
-                for(int i = 0; i < negate.size(); ++i) {
-                    Expression etmp = new Expression(negate.get(i));
+                for (Expression aNegate : negate) {
+                    Expression etmp = new Expression(aNegate);
                     res.add(etmp.substitute(forSubstitution));
                 }
                 return !f;
             }
-        } else {                /// here is slow
-            for(int i = 0; i < assumption.size(); ++i) {
-                if(assumption.get(i).representation.equals(expression.representation))
+        } else {
+            for (Expression anAssumption : assumption) {
+                if (anAssumption.representation.equals(expression.representation))
                     return true;
             }
             return false;
@@ -305,7 +302,7 @@ public class Main {
                     if (expr.second.oper.equals("->") && a.equals(b)) {
                         exprType = true;
                     }
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 // axiom 2  (A->B)->(A->B->C)->(A->C)
 
@@ -331,7 +328,7 @@ public class Main {
                             exprType = true;
                         }
 
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 //axiom 3 A->B->A&B
@@ -351,7 +348,7 @@ public class Main {
                             exprType = true;
                         }
 
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 //axiom 4,5 A&B->A
@@ -366,7 +363,7 @@ public class Main {
                         if (opers && (a1.equals(a2) || b.equals(a2))) {
                             exprType = true;
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 //axiom 6,7 A->A|B
@@ -382,7 +379,7 @@ public class Main {
                         if (opers && (a1.equals(a2) || a1.equals(b))) {
                             exprType = true;
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 //axiom 8 (A->Q)->(B->Q)->(A|B->Q)
@@ -406,7 +403,7 @@ public class Main {
                         if (opers && a1.equals(a2) && b1.equals(b2) && c1.equals(c2) && c2.equals(c3)) {
                             exprType = true;
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 //axiom 9 (A->B)->(A->!B)->!A
@@ -428,7 +425,7 @@ public class Main {
                         if (opers && a1.equals(a2) && a2.equals(a3) && b1.equals(b2)) {
                             exprType = true;
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 // axiom 10
@@ -440,7 +437,7 @@ public class Main {
                             exprType = true;
                         }
 
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 if(!exprType) {
@@ -559,10 +556,6 @@ public class Main {
                 e.printStackTrace();
             }
             return res;
-        }
-
-        int nextInt() {
-            return Integer.parseInt(next());
         }
     }
 

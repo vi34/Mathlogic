@@ -1,6 +1,3 @@
-import com.sun.tools.javac.util.Pair;
-import sun.rmi.runtime.Log;
-
 import java.util.*;
 import java.io.*;
 
@@ -13,6 +10,23 @@ public class Main {
     PrintWriter out;
     ExpressionParser parser;
 
+    int errorCode = 0;
+    Expression errTerm;
+    Expression errExpr;
+    String errVariable;
+
+    Vector<Expression> implToConj;
+    Vector<Expression> conjToImpl;
+    Vector<Expression> implChange;
+
+    Vector<Expression> parseHelper(String[] strings) {
+        Vector<Expression> res = new Vector<Expression>();
+        for (String string : strings) {
+            res.add(parser.parse(string));
+        }
+        return res;
+    }
+
     public void solve() throws IOException {
         String s;
         Expression expr;
@@ -22,7 +36,7 @@ public class Main {
         Vector<Expression> gamma = new Vector<Expression>();
         Vector<String> answer = new Vector<String>();
         parser = new ExpressionParser();
-
+        initProve();
         s = in.nextLine();
         s = s.replace(" ", "");
         int comma = s.indexOf(',');
@@ -34,7 +48,11 @@ public class Main {
             comma = s.indexOf(',');
         }
 
-        alphaExpr = parser.parse(s.substring(0, s.indexOf("|-")));
+        if(s.indexOf("|-") == 0) {
+            alphaExpr = null;
+        } else {
+            alphaExpr = parser.parse(s.substring(0, s.indexOf("|-")));
+        }
         s = s.substring(s.indexOf("|-") + 2);
         bettaExpr = parser.parse(s);
         String firstLine = "";
@@ -45,13 +63,18 @@ public class Main {
             firstLine += gamma.get(gamma.size() - 1).representation;
         }
         firstLine += "|-";
-        firstLine += alphaExpr.representation + "->" + bettaExpr.representation;
+        if(alphaExpr != null) {
+            firstLine += alphaExpr.representation + "->";
+        }
+        firstLine += bettaExpr.representation;
         answer.add(firstLine);
 
-        answer.addAll(deduction(gamma, alphaExpr));
-
-        for(int i = 0; i < answer.size(); ++i) {
-            out.println(answer.get(i));
+        Vector<String> deductionRes = deduction(gamma,alphaExpr);
+        if(deductionRes != null) {
+            answer.addAll(deductionRes);
+            for (String anAnswer : answer) {
+                out.println(anAnswer);
+            }
         }
     }
 
@@ -60,25 +83,23 @@ public class Main {
         Expression expr;
         Vector<Expression> proved = new Vector<Expression>();
         String s;
+        int lineNumber = -1;
         try {
             while(true) {
                 s = in.nextLine();
                 s = s.replace(" ", "");
                 if(s.equals("")) {continue;}
+                lineNumber++;
                 expr = parser.parse(s);
                 proved.add(expr);
                 int axiom = check_axiom(expr);
-                boolean exprType;
-                if(axiom > 0) {
-                    exprType = true;
-                } else {
-                    exprType = false;
-                }
+                boolean prove;
+                prove = axiom > 0;
 
-                if(!exprType) {
-                    for(int i = 0; i < gammaExpr.size(); ++i) {
-                        if(gammaExpr.get(i).representation.equals(expr.representation)) {
-                            exprType = true;
+                if(!prove) {
+                    for (Expression aGammaExpr : gammaExpr) {
+                        if (aGammaExpr.representation.equals(expr.representation)) {
+                            prove = true;
                             break;
                         }
                     }
@@ -86,31 +107,32 @@ public class Main {
 
                 Vector<Expression> var = new Vector<Expression>();
                 // expr is axiom or gamma
-                if (exprType) {
-                    res.add("(" + res.size() + ")" + expr.representation + "(cx.A" + axiom + ")");
-                    Expression etmp = parser.parse("1->(2->1)");
-                    var.add(expr);
-                    var.add(alphaExpr);
-                    etmp.substitute(var);
-                    //res.add(etmp.representation);
+                if (prove) {
+                    res.add(expr.representation);
+                    if(alphaExpr != null) {
+                        Expression etmp = parser.parse("1->(2->1)");
+                        var.add(expr);
+                        var.add(alphaExpr);
+                        etmp.substitute(var);
+                        res.add(etmp.representation);
+                    }
 
                 }
 
-                if (!exprType && alphaExpr.representation.equals(expr.representation)) {
+                if (!prove && alphaExpr != null && alphaExpr.representation.equals(expr.representation)) {
                     var.clear();
                     var.add(expr);
                     Expression etmp = new Expression(expr,expr,"->");
                     var.add(etmp);
-                    //res.add(parser.parse("1->2").substitute(var).representation);
-                    //res.add(parser.parse("(1->2)->(1->(2->1))->2").substitute(var).representation);
-                    //res.add(parser.parse("(1->(2->1))->2").substitute(var).representation);
-                    //res.add(parser.parse("1->(2->1)").substitute(var).representation);
-                    //out.println(2);  //////
-                    exprType = true;
+                    res.add(parser.parse("1->2").substitute(var).representation);
+                    res.add(parser.parse("(1->2)->(1->(2->1))->2").substitute(var).representation);
+                    res.add(parser.parse("(1->(2->1))->2").substitute(var).representation);
+                    res.add(parser.parse("1->(2->1)").substitute(var).representation);
+                    prove = true;
                 }
 
-                boolean prove = false;
-                if (!exprType) {
+
+                if (!prove) {
                     var.clear();
                     var.add(alphaExpr);
 
@@ -126,24 +148,124 @@ public class Main {
                                     var.add(proved.get(i));
                                     var.add(expr);
 
-                                    //res.add(parser.parse("(1->2)->((1->3)->(1->4))").substitute(var).representation);
-                                    //res.add(parser.parse("((1->3)->(1->4))").substitute(var).representation);
-                                    //out.println(3);/////
-                                    res.add("(" + res.size() + ")" +expr.representation+ "(MP "+ j + "," + i + ")" );
+                                    if(alphaExpr != null) {
+                                        res.add(parser.parse("(1->2)->((1->3)->(1->4))").substitute(var).representation);
+                                        res.add(parser.parse("((1->3)->(1->4))").substitute(var).representation);
+                                    } else {
+                                        res.add(expr.representation);
+                                    }
+                                    prove = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if(!prove && expr.oper.equals("->") && expr.second.oper.equals("@")) {// rule for (φ) → ∀x(ψ)
+                        for(int i = proved.size() - 1; i >= 0 && !prove; --i) {
+                            if(proved.get(i).first == null || proved.get(i).second == null)
+                                continue;
+                            if(proved.get(i).first.representation.equals(expr.first.representation) &&
+                                    proved.get(i).second.representation.equals(expr.second.second.representation))
+                            {
+                                if(expr.first.freeVariables.contains(expr.second.first.representation)) { // x is free in φ
+                                    errorCode = 2;
+                                    errVariable = expr.second.first.representation;
+                                    errExpr = expr.first;
+                                } else if(alphaExpr != null && alphaExpr.freeVariables.contains(expr.second.first.representation)) {
+                                    errorCode = 3;
+                                    errVariable = expr.second.first.representation;
+                                    errExpr = alphaExpr;
+                                } else {
+                                    if(alphaExpr != null) {
+                                        var.clear();
+                                        var.add(alphaExpr);
+                                        var.add(expr.first);
+                                        var.add(expr.second.second);
+                                        for(Expression expression: implToConj) {
+                                            Expression tmp = new Expression(expression);
+                                            res.add(tmp.substitute(var).representation);
+                                        }
+                                        res.add(parser.parse("1&2->3").substitute(var).representation);
+                                        var.set(2,expr.second);
+                                        res.add(parser.parse("1&2->3").substitute(var).representation);
+                                        for(Expression expression: conjToImpl) {
+                                            Expression tmp = new Expression(expression);
+                                            res.add(tmp.substitute(var).representation);
+                                        }
+                                    }
+
+                                    prove = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if(!prove && expr.oper.equals("->") && expr.first.oper.equals("?")) {// rule for ∃x(ψ) → (φ)
+                        for(int i = proved.size() - 1; i >= 0 && !prove; --i) {
+                            if(proved.get(i).first == null || proved.get(i).second == null)
+                                continue;
+                            if(proved.get(i).first.representation.equals(expr.first.second.representation) &&
+                                    proved.get(i).second.representation.equals(expr.second.representation))
+                            {
+                                if(expr.second.freeVariables.contains(expr.first.first.representation)) { // x is free in φ
+                                    errorCode = 2;
+                                    errVariable = expr.first.first.representation;
+                                    errExpr = expr.second;
+                                } else if(alphaExpr != null && alphaExpr.freeVariables.contains(expr.first.first.representation)) {
+                                    errorCode = 3;
+                                    errVariable = expr.second.first.representation;
+                                    errExpr = alphaExpr;
+                                } else {
+                                    if(alphaExpr != null) {
+                                        var.clear();
+                                        var.add(alphaExpr);
+                                        var.add(expr.first.second);
+                                        var.add(expr.second);
+                                        for(Expression expression: implChange) {
+                                            Expression tmp = new Expression(expression);
+                                            res.add(tmp.substitute(var).representation);
+                                        }
+                                        res.add(parser.parse("2->1->3").substitute(var).representation);
+                                        var.clear();
+                                        var.add(expr.first);
+                                        var.add(alphaExpr);
+                                        var.add(expr.second);
+                                        res.add(parser.parse("2->1->3").substitute(var).representation);
+                                        for(Expression expression: implChange) {
+                                            Expression tmp = new Expression(expression);
+                                            res.add(tmp.substitute(var).representation);
+                                        }
+                                    }
                                     prove = true;
                                 }
                             }
                         }
                     }
                 }
-                if(!prove && axiom == 0) {
-                    res.add(expr.representation + " (не доказано)");
+                if(!prove) {
+                    out.print("Вывод некорректен начиная с формулы номер " + lineNumber);
+                    switch (errorCode) {
+                        case 1:
+                            out.print(": терм " + errTerm + " не свободен для подстановки в формулу " + errExpr.representation + " вместо переменной " + errVariable + ".");
+                            break;
+                        case 2:
+                            out.print(": переменная " + errVariable + " входит свободно в формулу " + errExpr.representation + ".");
+                            break;
+                        case 3:
+                            out.print(": используется правило с квантором по переменной " + errVariable + ", входящей свободно в допущение " + errExpr.representation + ".");
+                            break;
+                    }
+
+
+                    return null;
                 }
-                Expression etmp = new Expression(alphaExpr,expr, "->");
-                //res.add(etmp.representation);
+                if(alphaExpr != null) {
+                    Expression etmp = new Expression(alphaExpr, expr, "->");
+                    res.add(etmp.representation);
+                }
 
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         return res;
@@ -159,7 +281,7 @@ public class Main {
             if (expr.second.oper.equals("->") && a.equals(b)) {
                 return 1;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         // axiom 2  (A->B)->(A->B->C)->(A->C)
             try {
@@ -181,7 +303,7 @@ public class Main {
                 if (opers && a1.equals(a2) && a2.equals(a3) && b1.equals(b2) && c1.equals(c2)) {
                     return 2;
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         //axiom 3 A->B->A&B
             try {
@@ -199,7 +321,7 @@ public class Main {
                     return 3;
                 }
 
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         //axiom 4,5 A&B->A
             try {
@@ -212,7 +334,7 @@ public class Main {
                 if (opers && (a1.equals(a2) || b.equals(a2))) {
                     return 4;
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         //axiom 6,7 A->A|B
             try {
@@ -226,7 +348,7 @@ public class Main {
                 if (opers && (a1.equals(a2) || a1.equals(b))) {
                    return 6;
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         //axiom 8 (A->Q)->(B->Q)->(A|B->Q)
             try {
@@ -248,7 +370,7 @@ public class Main {
                 if (opers && a1.equals(a2) && b1.equals(b2) && c1.equals(c2) && c2.equals(c3)) {
                     return 8;
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         //axiom 9 (A->B)->(A->!B)->!A
             try {
@@ -318,6 +440,11 @@ public class Main {
                 if(opers && correct) {// check substitution error
                     return 11;
                 }
+                if(errorCode == 1) {
+                    errVariable = expr.first.first.representation;
+                    errExpr = expr.first.second;
+                    errTerm = theta;
+                }
 
             } catch (Exception ignored) {
             }
@@ -329,6 +456,11 @@ public class Main {
             compareOnSubstitution(expr.second.second, expr.first, expr.second.first.representation);
             if(opers && correct) {// check substitution error
                 return 12;
+            }
+            if(errorCode == 1) {
+                errVariable = expr.first.first.representation;
+                errExpr = expr.first.second;
+                errTerm = theta;
             }
 
         } catch (Exception ignored) {
@@ -367,6 +499,7 @@ public class Main {
             }
             if(a.oper.equals("@") || a.oper.equals("!")) {
                 if(a.freeVariables.size() - 1 + theta.freeVariables.size() != b.freeVariables.size()) {
+                    errorCode = 1;
                     throw null;// not free for substitution
                 }
             }
@@ -454,6 +587,120 @@ public class Main {
 
     public static void main(String[] arg) {
         new Main().run();
+    }
+
+    void initProve() {
+        implToConj = parseHelper(new String[]{
+                "((1&2)->2)->(((1&2)->(2->3))->((1&2)->3))",
+                "(((1&2)->2)->(((1&2)->(2->3))->((1&2)->3)))->((1->(2->3))->(((1&2)->2)->(((1&2)->(2->3))->((1&2)->3))))",
+                "(1->(2->3))->(((1&2)->2)->(((1&2)->(2->3))->((1&2)->3)))",
+                "(1&2)->2",
+                "((1&2)->2)->((1->(2->3))->((1&2)->2))",
+                "(1->(2->3))->((1&2)->2)",
+                "((1->(2->3))->((1&2)->2))->(((1->(2->3))->(((1&2)->2)->(((1&2)->(2->3))->((1&2)->3))))->((1->(2->3))->(((1&2)->(2->3))->((1&2)->3))))",
+                "((1->(2->3))->(((1&2)->2)->(((1&2)->(2->3))->((1&2)->3))))->((1->(2->3))->(((1&2)->(2->3))->((1&2)->3)))",
+                "(1->(2->3))->(((1&2)->(2->3))->((1&2)->3))",
+                "((1&2)->1)->(((1&2)->(1->(2->3)))->((1&2)->(2->3)))",
+                "(((1&2)->1)->(((1&2)->(1->(2->3)))->((1&2)->(2->3))))->((1->(2->3))->(((1&2)->1)->(((1&2)->(1->(2->3)))->((1&2)->(2->3)))))",
+                "(1->(2->3))->(((1&2)->1)->(((1&2)->(1->(2->3)))->((1&2)->(2->3))))",
+                "(1&2)->1",
+                "((1&2)->1)->((1->(2->3))->((1&2)->1))",
+                "(1->(2->3))->((1&2)->1)",
+                "((1->(2->3))->((1&2)->1))->(((1->(2->3))->(((1&2)->1)->(((1&2)->(1->(2->3)))->((1&2)->(2->3)))))->((1->(2->3))->(((1&2)->(1->(2->3)))->((1&2)->(2->3)))))",
+                "((1->(2->3))->(((1&2)->1)->(((1&2)->(1->(2->3)))->((1&2)->(2->3)))))->((1->(2->3))->(((1&2)->(1->(2->3)))->((1&2)->(2->3))))",
+                "(1->(2->3))->(((1&2)->(1->(2->3)))->((1&2)->(2->3)))",
+                "(1->(2->3))->((1&2)->(1->(2->3)))",
+                "((1->(2->3))->((1&2)->(1->(2->3))))->(((1->(2->3))->(((1&2)->(1->(2->3)))->((1&2)->(2->3))))->((1->(2->3))->((1&2)->(2->3))))",
+                "((1->(2->3))->(((1&2)->(1->(2->3)))->((1&2)->(2->3))))->((1->(2->3))->((1&2)->(2->3)))",
+                "(1->(2->3))->((1&2)->(2->3))",
+                "((1->(2->3))->((1&2)->(2->3)))->(((1->(2->3))->(((1&2)->(2->3))->((1&2)->3)))->((1->(2->3))->((1&2)->3)))",
+                "((1->(2->3))->(((1&2)->(2->3))->((1&2)->3)))->((1->(2->3))->((1&2)->3))",
+                "(1->(2->3))->((1&2)->3)"
+        });
+        conjToImpl = parseHelper(new String[]{
+                "(1->(2->((1&2)->3)))->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3)))",
+                "((1->(2->((1&2)->3)))->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3))))->(((1&2)->3)->((1->(2->((1&2)->3)))->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3)))))",
+                "((1&2)->3)->((1->(2->((1&2)->3)))->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3))))",
+                "(1->((1&2)->3))->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3))))",
+                "((1->((1&2)->3))->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3)))))->(((1&2)->3)->((1->((1&2)->3))->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3))))))",
+                "((1&2)->3)->((1->((1&2)->3))->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3)))))",
+                "((1&2)->3)->(1->((1&2)->3))",
+                "(((1&2)->3)->(1->((1&2)->3)))->((((1&2)->3)->((1->((1&2)->3))->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3))))))->(((1&2)->3)->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3))))))",
+                "(((1&2)->3)->((1->((1&2)->3))->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3))))))->(((1&2)->3)->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3)))))",
+                "((1&2)->3)->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3))))",
+                "(((1&2)->3)->(2->((1&2)->3)))->(1->(((1&2)->3)->(2->((1&2)->3))))",
+                "((((1&2)->3)->(2->((1&2)->3)))->(1->(((1&2)->3)->(2->((1&2)->3)))))->(((1&2)->3)->((((1&2)->3)->(2->((1&2)->3)))->(1->(((1&2)->3)->(2->((1&2)->3))))))",
+                "((1&2)->3)->((((1&2)->3)->(2->((1&2)->3)))->(1->(((1&2)->3)->(2->((1&2)->3)))))",
+                "((1&2)->3)->(2->((1&2)->3))",
+                "(((1&2)->3)->(2->((1&2)->3)))->(((1&2)->3)->(((1&2)->3)->(2->((1&2)->3))))",
+                "((1&2)->3)->(((1&2)->3)->(2->((1&2)->3)))",
+                "(((1&2)->3)->(((1&2)->3)->(2->((1&2)->3))))->((((1&2)->3)->((((1&2)->3)->(2->((1&2)->3)))->(1->(((1&2)->3)->(2->((1&2)->3))))))->(((1&2)->3)->(1->(((1&2)->3)->(2->((1&2)->3))))))",
+                "(((1&2)->3)->((((1&2)->3)->(2->((1&2)->3)))->(1->(((1&2)->3)->(2->((1&2)->3))))))->(((1&2)->3)->(1->(((1&2)->3)->(2->((1&2)->3)))))",
+                "((1&2)->3)->(1->(((1&2)->3)->(2->((1&2)->3))))",
+                "(((1&2)->3)->(1->(((1&2)->3)->(2->((1&2)->3)))))->((((1&2)->3)->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3)))))->(((1&2)->3)->(1->(2->((1&2)->3)))))",
+                "(((1&2)->3)->((1->(((1&2)->3)->(2->((1&2)->3))))->(1->(2->((1&2)->3)))))->(((1&2)->3)->(1->(2->((1&2)->3))))",
+                "((1&2)->3)->(1->(2->((1&2)->3)))",
+                "(((1&2)->3)->(1->(2->((1&2)->3))))->((((1&2)->3)->((1->(2->((1&2)->3)))->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3)))))->(((1&2)->3)->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3)))))",
+                "(((1&2)->3)->((1->(2->((1&2)->3)))->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3)))))->(((1&2)->3)->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3))))",
+                "((1&2)->3)->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3)))",
+                "(1->(2->(1&2)))->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3))))",
+                "((1->(2->(1&2)))->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3)))))->(((1&2)->3)->((1->(2->(1&2)))->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3))))))",
+                "((1&2)->3)->((1->(2->(1&2)))->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3)))))",
+                "1->(2->(1&2))",
+                "(1->(2->(1&2)))->(((1&2)->3)->(1->(2->(1&2))))",
+                "((1&2)->3)->(1->(2->(1&2)))",
+                "(((1&2)->3)->(1->(2->(1&2))))->((((1&2)->3)->((1->(2->(1&2)))->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3))))))->(((1&2)->3)->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3))))))",
+                "(((1&2)->3)->((1->(2->(1&2)))->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3))))))->(((1&2)->3)->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3)))))",
+                "((1&2)->3)->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3))))",
+                "((2->(1&2))->((2->((1&2)->3))->(2->3)))->(1->((2->(1&2))->((2->((1&2)->3))->(2->3))))",
+                "(((2->(1&2))->((2->((1&2)->3))->(2->3)))->(1->((2->(1&2))->((2->((1&2)->3))->(2->3)))))->(((1&2)->3)->(((2->(1&2))->((2->((1&2)->3))->(2->3)))->(1->((2->(1&2))->((2->((1&2)->3))->(2->3))))))",
+                "((1&2)->3)->(((2->(1&2))->((2->((1&2)->3))->(2->3)))->(1->((2->(1&2))->((2->((1&2)->3))->(2->3)))))",
+                "(2->(1&2))->((2->((1&2)->3))->(2->3))",
+                "((2->(1&2))->((2->((1&2)->3))->(2->3)))->(((1&2)->3)->((2->(1&2))->((2->((1&2)->3))->(2->3))))",
+                "((1&2)->3)->((2->(1&2))->((2->((1&2)->3))->(2->3)))",
+                "(((1&2)->3)->((2->(1&2))->((2->((1&2)->3))->(2->3))))->((((1&2)->3)->(((2->(1&2))->((2->((1&2)->3))->(2->3)))->(1->((2->(1&2))->((2->((1&2)->3))->(2->3))))))->(((1&2)->3)->(1->((2->(1&2))->((2->((1&2)->3))->(2->3))))))",
+                "(((1&2)->3)->(((2->(1&2))->((2->((1&2)->3))->(2->3)))->(1->((2->(1&2))->((2->((1&2)->3))->(2->3))))))->(((1&2)->3)->(1->((2->(1&2))->((2->((1&2)->3))->(2->3)))))",
+                "((1&2)->3)->(1->((2->(1&2))->((2->((1&2)->3))->(2->3))))",
+                "(((1&2)->3)->(1->((2->(1&2))->((2->((1&2)->3))->(2->3)))))->((((1&2)->3)->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3)))))->(((1&2)->3)->(1->((2->((1&2)->3))->(2->3)))))",
+                "(((1&2)->3)->((1->((2->(1&2))->((2->((1&2)->3))->(2->3))))->(1->((2->((1&2)->3))->(2->3)))))->(((1&2)->3)->(1->((2->((1&2)->3))->(2->3))))",
+                "((1&2)->3)->(1->((2->((1&2)->3))->(2->3)))",
+                "(((1&2)->3)->(1->((2->((1&2)->3))->(2->3))))->((((1&2)->3)->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3))))->(((1&2)->3)->(1->(2->3))))",
+                "(((1&2)->3)->((1->((2->((1&2)->3))->(2->3)))->(1->(2->3))))->(((1&2)->3)->(1->(2->3)))",
+                "((1&2)->3)->(1->(2->3))"
+        });
+        implChange = parseHelper(new String[] {
+                "(2->(1->(2->3)))->((2->((1->(2->3))->(1->3)))->(2->(1->3)))",
+                "((2->(1->(2->3)))->((2->((1->(2->3))->(1->3)))->(2->(1->3))))->((1->(2->3))->((2->(1->(2->3)))->((2->((1->(2->3))->(1->3)))->(2->(1->3)))))",
+                "(1->(2->3))->((2->(1->(2->3)))->((2->((1->(2->3))->(1->3)))->(2->(1->3))))",
+                "(1->(2->3))->(2->(1->(2->3)))",
+                "((1->(2->3))->(2->(1->(2->3))))->(((1->(2->3))->((2->(1->(2->3)))->((2->((1->(2->3))->(1->3)))->(2->(1->3)))))->((1->(2->3))->((2->((1->(2->3))->(1->3)))->(2->(1->3)))))",
+                "((1->(2->3))->((2->(1->(2->3)))->((2->((1->(2->3))->(1->3)))->(2->(1->3)))))->((1->(2->3))->((2->((1->(2->3))->(1->3)))->(2->(1->3))))",
+                "(1->(2->3))->((2->((1->(2->3))->(1->3)))->(2->(1->3)))",
+                "(2->(1->2))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3))))",
+                "((2->(1->2))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3)))))->((1->(2->3))->((2->(1->2))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3))))))",
+                "(1->(2->3))->((2->(1->2))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3)))))",
+                "2->(1->2)",
+                "(2->(1->2))->((1->(2->3))->(2->(1->2)))",
+                "(1->(2->3))->(2->(1->2))",
+                "((1->(2->3))->(2->(1->2)))->(((1->(2->3))->((2->(1->2))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3))))))->((1->(2->3))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3))))))",
+                "((1->(2->3))->((2->(1->2))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3))))))->((1->(2->3))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3)))))",
+                "(1->(2->3))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3))))",
+                "((1->2)->((1->(2->3))->(1->3)))->(2->((1->2)->((1->(2->3))->(1->3))))",
+                "(((1->2)->((1->(2->3))->(1->3)))->(2->((1->2)->((1->(2->3))->(1->3)))))->((1->(2->3))->(((1->2)->((1->(2->3))->(1->3)))->(2->((1->2)->((1->(2->3))->(1->3))))))",
+                "(1->(2->3))->(((1->2)->((1->(2->3))->(1->3)))->(2->((1->2)->((1->(2->3))->(1->3)))))",
+                "(1->2)->((1->(2->3))->(1->3))",
+                "((1->2)->((1->(2->3))->(1->3)))->((1->(2->3))->((1->2)->((1->(2->3))->(1->3))))",
+                "(1->(2->3))->((1->2)->((1->(2->3))->(1->3)))",
+                "((1->(2->3))->((1->2)->((1->(2->3))->(1->3))))->(((1->(2->3))->(((1->2)->((1->(2->3))->(1->3)))->(2->((1->2)->((1->(2->3))->(1->3))))))->((1->(2->3))->(2->((1->2)->((1->(2->3))->(1->3))))))",
+                "((1->(2->3))->(((1->2)->((1->(2->3))->(1->3)))->(2->((1->2)->((1->(2->3))->(1->3))))))->((1->(2->3))->(2->((1->2)->((1->(2->3))->(1->3)))))",
+                "(1->(2->3))->(2->((1->2)->((1->(2->3))->(1->3))))",
+                "((1->(2->3))->(2->((1->2)->((1->(2->3))->(1->3)))))->(((1->(2->3))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3)))))->((1->(2->3))->(2->((1->(2->3))->(1->3)))))",
+                "((1->(2->3))->((2->((1->2)->((1->(2->3))->(1->3))))->(2->((1->(2->3))->(1->3)))))->((1->(2->3))->(2->((1->(2->3))->(1->3))))",
+                "(1->(2->3))->(2->((1->(2->3))->(1->3)))",
+                "((1->(2->3))->(2->((1->(2->3))->(1->3))))->(((1->(2->3))->((2->((1->(2->3))->(1->3)))->(2->(1->3))))->((1->(2->3))->(2->(1->3))))",
+                "((1->(2->3))->((2->((1->(2->3))->(1->3)))->(2->(1->3))))->((1->(2->3))->(2->(1->3)))",
+                "(1->(2->3))->(2->(1->3))"
+        });
     }
 
 }
