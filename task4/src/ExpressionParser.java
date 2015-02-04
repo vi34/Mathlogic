@@ -58,6 +58,8 @@ public class ExpressionParser {
             res.second = right;
             res.rest = right.rest;
             res.oper = "|";
+            res.freeVariables.addAll(res.first.freeVariables);
+            res.freeVariables.addAll(res.second.freeVariables);
             res.representation = "(" + res.first.representation + "|" + res.second.representation + ")";
             res.inBraces = true;
 
@@ -84,6 +86,8 @@ public class ExpressionParser {
             res.second = right;
             res.rest = right.rest;
             res.oper = "&";
+            res.freeVariables.addAll(res.first.freeVariables);
+            res.freeVariables.addAll(res.second.freeVariables);
             res.representation = "(" + res.first.representation + "&" + res.second.representation + ")";
             res.inBraces = true;
 
@@ -112,7 +116,8 @@ public class ExpressionParser {
             res.oper = Character.toString(s.charAt(0));
             res.first = variable(s.substring(1));
             res.second = unary(res.first.rest);
-            res.representation = res.oper + res.first.representation + res.second.representation;
+            res.representation = "(" + res.oper + res.first.representation + res.second.representation + ")";
+            res.inBraces = true;
             res.rest = res.second.rest;
             res.freeVariables.addAll(res.second.freeVariables);
             res.freeVariables.remove(res.first.representation);
@@ -128,9 +133,23 @@ public class ExpressionParser {
                     countBrace--;
                 }
             }
-            if(s.length() > i && s.substring(i).charAt(0) == '=') {
-                return predicate(s);
+            int j = i;          // need to guess term = term or (expression) ?
+            while(j < s.length()) {
+                if(s.charAt(j) == '(') {
+                    countBrace++;
+                }
+                if(s.charAt(j) == ')') {
+                    countBrace--;
+                }
+                Character c =s.charAt(j);
+                if(c != '+' && c != '*' && c != '\'' && c != '(' && c != ')' && !(c > 47 && c < 58) && !(c >= 'a' && c <= 'z') && c != ',' && c != '=') {
+                    break;
+                }
+                if(s.charAt(j) == '=' && countBrace == 0)
+                    return predicate(s);
+                ++j;
             }
+            String test = s.substring(i);
             Expression res = parse(s.substring(1, i - 1));
             res.rest = s.substring(i);
             if(!res.inBraces) {
@@ -177,7 +196,8 @@ public class ExpressionParser {
         res.rest = res.second.rest;
         res.freeVariables.addAll(res.first.freeVariables);
         res.freeVariables.addAll(res.second.freeVariables);
-        res.representation = res.first.representation + res.oper + res.second.representation;
+        res.representation = "(" + res.first.representation + res.oper + res.second.representation + ")";
+        res.inBraces = true;
         return res;
     }
 
@@ -251,6 +271,7 @@ public class ExpressionParser {
             res.representation = s.substring(0,i);
             res.oper = res.representation;// f
             res.rest = s.substring(i);
+            res.inBraces = true;
             if(i < s.length() && s.charAt(i) == '(') {
 
                 res.terms = new ArrayList<Expression>();
@@ -272,8 +293,15 @@ public class ExpressionParser {
         int i = 0;
         while(i < res.rest.length() && res.rest.charAt(i) == '\'') {
             ++i;
+            Expression tmp = new Expression();
+            tmp.first = res;
+            tmp.inBraces = true;
+            tmp.rest = res.rest;
+            tmp.representation = res.representation + "'";
+            tmp.freeVariables = res.freeVariables;
+            tmp.oper = "'";
+            res = tmp;
         }
-        res.representation += res.rest.substring(0,i);
         res.rest = res.rest.substring(i);
         return res;
     }
