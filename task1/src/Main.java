@@ -236,7 +236,7 @@ public class Main {
     public void run() {
         try {
             in = new FastScanner(new File("axiom.in"));
-            out = new PrintWriter(new File("axiom.out"));
+            out = new PrintWriter(new File("axiom.out"),"UTF-8");
 
             solve();
 

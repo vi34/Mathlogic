@@ -557,7 +557,7 @@ public class Main {
     public void run() {
         try {
             in = new FastScanner(new File("test.in"));
-            out = new PrintWriter(new File("test.out"));
+            out = new PrintWriter(new File("test.out"),"UTF-8");
 
             solve();
 

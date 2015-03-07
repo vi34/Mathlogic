@@ -156,7 +156,7 @@ public class Main {
 
             for(int j = 0; j < exclude1.size() / 2; j ++) {
                 forSubstitute.clear();
-                Expression alpha = new Expression(exclude1.get(j).second);          // maybe slow?
+                Expression alpha = new Expression(exclude1.get(j).second);
                 exclude2.add(alpha);
                 forSubstitute.add(variables.get(i));
                 forSubstitute.add(alpha);
@@ -184,9 +184,6 @@ public class Main {
             boolean f,s;
             Vector<Expression> forSubstitution = new Vector<Expression>();
             forSubstitution.add(expression.first);
-            if(expression.representation.equals("!!B")) {
-                int a = 5;
-            }
             f = inductionOnStructure(expression.first,assumption,res);
             if(expression.second != null) {
                 s = inductionOnStructure(expression.second,assumption,res);
@@ -232,7 +229,6 @@ public class Main {
                     for (Expression aConjunction11 : conjunction11) {
                         Expression etmp = new Expression(aConjunction11);
                         etmp.substitute(forSubstitution);
-                        //etmp.representation += "ALLLLA";
                         res.add(etmp);
                     }
                     return true;
@@ -262,7 +258,6 @@ public class Main {
                 return false;
             } else {
                 if(!f) {
-
                     Expression etmp = new Expression(parser.parse("!1"));
                     res.add(etmp.substitute(forSubstitution));
                     return !f;
@@ -515,7 +510,7 @@ public class Main {
     public void run() {
         try {
             in = new FastScanner(new File("test.in"));
-            out = new PrintWriter(new File("test.out"));
+            out = new PrintWriter(new File("test.out"),"UTF-8");
 
             solve();
 

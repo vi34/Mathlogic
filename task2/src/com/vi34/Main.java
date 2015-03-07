@@ -262,7 +262,7 @@ public class Main {
     public void run() {
         try {
             in = new FastScanner(new File("proof.in"));
-            out = new PrintWriter(new File("proof.out"));
+            out = new PrintWriter(new File("proof.out"),"UTF-8");
 
             solve();
 
