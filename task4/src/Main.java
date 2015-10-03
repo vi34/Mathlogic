@@ -44,15 +44,23 @@ public class Main {
         }
 
         s = s.replace(" ", "");
-        int comma = s.indexOf(',');
-        while (comma != -1 && comma < s.indexOf("|-")) {
-            expr = parser.parse(s.substring(0, comma));
-            gamma.add(expr);
-            proved.add(expr);
-            s = s.substring(comma + 1);
-            comma = s.indexOf(',');
-        }
+
         if (s.contains("|-")) {
+            int balance = 0;
+            for (int i = 0; i < s.indexOf("|-"); ++i) {
+                if (s.charAt(i) == '(') {
+                    balance++;
+                } else if (s.charAt(i) == ')') {
+                    balance--;
+                }
+                if (s.charAt(i) == ',' && balance == 0) {
+                    expr = parser.parse(s.substring(0, i));
+                    gamma.add(expr);
+                    proved.add(expr);
+                    s = s.substring(i + 1);
+                }
+            }
+
             if (s.indexOf("|-") == 0) {
                 alphaExpr = null;
             } else {
@@ -101,10 +109,9 @@ public class Main {
                     continue;
                 }
                 lineNumber++;
-                if (lineNumber == 11750) {
-                    int q = 1231;
+                if (lineNumber == 60) {
+                    int a = 5;
                 }
-
                 expr = parser.parse(s);
                 proved.add(expr);
                 int axiom = check_axiom(expr);
@@ -257,7 +264,7 @@ public class Main {
                     }
                 }
                 if (!prove) {
-                    out.print("Вывод некорректен начиная с формулы номер " + lineNumber);
+                    out.print("Вывод некорректен начиная с формулы номер " + (lineNumber + 1));
                     switch (errorCode) {
                         case 1:
                             out.print(": терм " + errTerm.representation + " не свободен для подстановки в формулу " + errExpr.representation + " вместо переменной " + errVariable + ".");
@@ -499,7 +506,7 @@ public class Main {
         } catch (Exception e) {
             correct = false;
         }
-        if (correct && theta != null) {
+        if (correct && (theta != null || a.representation.equals(b.representation) )) {
             return true;
         }
         correct = false;
