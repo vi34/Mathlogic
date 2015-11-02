@@ -1,8 +1,8 @@
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 
-/**
- * Created by vi34 on 08.01.15.
- */
 public class Expression {
     String representation;
     String oper;
@@ -46,7 +46,7 @@ public class Expression {
             this.second = new Expression(other.second);
     }
 
-    Expression substitute(ArrayList<Expression> vec){
+    Expression substitute(Vector<Expression> vec){
         if(first != null) {
             first.substitute(vec);
             this.representation = first.representation;

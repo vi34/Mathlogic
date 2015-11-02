@@ -12,8 +12,8 @@ public class Main {
         String s;
         Expression expr;
         int lineCounter = 0;
-        Vector<Expression> proved = new Vector<Expression>();
-        Vector<Integer> pLineNum = new Vector<Integer>();
+        ArrayList<Expression> proved = new ArrayList<Expression>();
+        ArrayList<Integer> pLineNum = new ArrayList<Integer>();
         parser = new ExpressionParser();
         try {
             while (true) {

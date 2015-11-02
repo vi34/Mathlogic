@@ -16,12 +16,12 @@ public class Main {
     Expression errExpr;
     String errVariable;
 
-    Vector<Expression> implToConj;
-    Vector<Expression> conjToImpl;
-    Vector<Expression> implChange;
+    ArrayList<Expression> implToConj;
+    ArrayList<Expression> conjToImpl;
+    ArrayList<Expression> implChange;
 
-    Vector<Expression> parseHelper(String[] strings) {
-        Vector<Expression> res = new Vector<Expression>();
+    ArrayList<Expression> parseHelper(String[] strings) {
+        ArrayList<Expression> res = new ArrayList<Expression>();
         for (String string : strings) {
             res.add(parser.parse(string));
         }
@@ -33,9 +33,9 @@ public class Main {
         Expression expr;
         Expression alphaExpr;
         Expression bettaExpr;
-        Vector<Expression> proved = new Vector<Expression>();
-        Vector<Expression> gamma = new Vector<Expression>();
-        Vector<String> answer = new Vector<String>();
+        ArrayList<Expression> proved = new ArrayList<Expression>();
+        ArrayList<Expression> gamma = new ArrayList<Expression>();
+        ArrayList<String> answer = new ArrayList<String>();
         parser = new ExpressionParser();
         initProve();
         s = in.nextLine();
@@ -86,7 +86,7 @@ public class Main {
             in = new FastScanner(new File("test.in"));
             alphaExpr = null;
         }
-        Vector<String> deductionRes = deduction(gamma, alphaExpr);
+        ArrayList<String> deductionRes = deduction(gamma, alphaExpr);
         if (deductionRes != null) {
             answer.addAll(deductionRes);
             for (String anAnswer : answer) {
@@ -95,10 +95,10 @@ public class Main {
         }
     }
 
-    public Vector<String> deduction(Vector<Expression> gammaExpr, Expression alphaExpr) {
-        Vector<String> res = new Vector<String>();
+    public ArrayList<String> deduction(ArrayList<Expression> gammaExpr, Expression alphaExpr) {
+        ArrayList<String> res = new ArrayList<String>();
         Expression expr;
-        Vector<Expression> proved = new Vector<Expression>();
+        ArrayList<Expression> proved = new ArrayList<Expression>();
         String s;
         int lineNumber = -1;
         try {
@@ -127,7 +127,7 @@ public class Main {
                     }
                 }
 
-                Vector<Expression> var = new Vector<Expression>();
+                ArrayList<Expression> var = new ArrayList<Expression>();
                 // expr is axiom or gamma
                 if (prove) {
                     res.add(expr.representation);

@@ -7,17 +7,17 @@ public class Main {
     PrintWriter out;
     ExpressionParser parser;
 
-    Vector<Expression> implication11_01;
-    Vector<Expression> implication10;
-    Vector<Expression> implication00;
-    Vector<Expression> contraposition;
-    Vector<Expression> conjunction00_01;
-    Vector<Expression> conjunction10;
-    Vector<Expression> conjunction11;
-    Vector<Expression> disjunction00;
-    Vector<Expression> disjunction01;
-    Vector<Expression> disjunction10_11;
-    Vector<Expression> negate;
+    ArrayList<Expression> implication11_01;
+    ArrayList<Expression> implication10;
+    ArrayList<Expression> implication00;
+    ArrayList<Expression> contraposition;
+    ArrayList<Expression> conjunction00_01;
+    ArrayList<Expression> conjunction10;
+    ArrayList<Expression> conjunction11;
+    ArrayList<Expression> disjunction00;
+    ArrayList<Expression> disjunction01;
+    ArrayList<Expression> disjunction10_11;
+    ArrayList<Expression> negate;
 
     public void solve() throws IOException {
         String s;
@@ -25,7 +25,7 @@ public class Main {
         parser = new ExpressionParser();
         s = in.nextLine();
         s = s.replace(" ", "");
-        Vector<Expression> answer;
+        ArrayList<Expression> answer;
         initProve();
         expr = parser.parse(s);
 
@@ -38,23 +38,23 @@ public class Main {
         }
     }
 
-    Vector<Expression> parseHelper(String[] strings) {
-        Vector<Expression> res = new Vector<Expression>();
+    ArrayList<Expression> parseHelper(String[] strings) {
+        ArrayList<Expression> res = new ArrayList<Expression>();
         for (String string : strings) {
             res.add(parser.parse(string));
         }
         return res;
     }
 
-    public Vector<Expression> getVariables(Expression expression) {
+    public ArrayList<Expression> getVariables(Expression expression) {
         Set<String> s = new HashSet<String>();
-        Vector<Expression> res = new Vector<Expression>();
+        ArrayList<Expression> res = new ArrayList<Expression>();
         search(expression, s, res);
 
         return res;
     }
 
-    void search(Expression expression, Set<String> s, Vector<Expression> res) {
+    void search(Expression expression, Set<String> s, ArrayList<Expression> res) {
         if(expression.first != null) {
             search(expression.first, s, res);
             if(expression.second != null) {
@@ -72,17 +72,17 @@ public class Main {
         }
     }
 
-    public Vector<Expression> assumptionProve(Expression expression){
-        Vector<Expression> res = new Vector<Expression>();
-        Vector<Expression> assumption = new Vector<Expression>();
-        Vector<Expression> exclude1 = new Vector<Expression>();
-        Vector<Expression> exclude2 = new Vector<Expression>();
-        Vector<Expression> variables = getVariables(expression);
+    public ArrayList<Expression> assumptionProve(Expression expression){
+        ArrayList<Expression> res = new ArrayList<Expression>();
+        ArrayList<Expression> assumption = new ArrayList<Expression>();
+        ArrayList<Expression> exclude1 = new ArrayList<Expression>();
+        ArrayList<Expression> exclude2 = new ArrayList<Expression>();
+        ArrayList<Expression> variables = getVariables(expression);
 
         int variablesCount = variables.size();
         for(int i = 0; i < (1 << variablesCount); ++i) {
             assumption.clear();
-            Vector<Expression> tmpRes = new Vector<Expression>();
+            ArrayList<Expression> tmpRes = new ArrayList<Expression>();
 
             for(int j = 0; j < variablesCount; ++j) {
                 if(((1 << j) & i) != 0) {
@@ -120,7 +120,7 @@ public class Main {
         }
 
         for(int i = variablesCount - 1; i >= 0; --i) {
-            Vector<Expression> forSubstitute = new Vector<Expression>();
+            ArrayList<Expression> forSubstitute = new ArrayList<Expression>();
             forSubstitute.add(variables.get(i));
             Expression etmp1 = parser.parse("1|!1").substitute(forSubstitute);
             forSubstitute.add(etmp1);
@@ -166,7 +166,7 @@ public class Main {
                 res.add(parser.parse("2").substitute(forSubstitute));
 
             }
-            Vector<Expression> tmp;
+            ArrayList<Expression> tmp;
             tmp = exclude1;
             exclude1 = exclude2;
             exclude2 = tmp;
@@ -178,11 +178,11 @@ public class Main {
         return res;
     }
 
-    private boolean inductionOnStructure(Expression expression, Vector<Expression> assumption, Vector<Expression> res) {
+    private boolean inductionOnStructure(Expression expression, ArrayList<Expression> assumption, ArrayList<Expression> res) {
         if(expression.first != null)
         {
             boolean f,s;
-            Vector<Expression> forSubstitution = new Vector<Expression>();
+            ArrayList<Expression> forSubstitution = new ArrayList<Expression>();
             forSubstitution.add(expression.first);
             f = inductionOnStructure(expression.first,assumption,res);
             if(expression.second != null) {
@@ -278,15 +278,15 @@ public class Main {
 
     }
 
-    public Vector<Expression> deduction(Vector<Expression> alphaExpr, Vector<Expression> proveIn) {
-        Vector<Expression> res = null;
+    public ArrayList<Expression> deduction(ArrayList<Expression> alphaExpr, ArrayList<Expression> proveIn) {
+        ArrayList<Expression> res = null;
         Expression expr;
-        Vector<Expression> proved;
+        ArrayList<Expression> proved;
         for(int l = 0; l < alphaExpr.size(); ++l) {
-            proved = new Vector<Expression>();
-            res = new Vector<Expression>();
+            proved = new ArrayList<Expression>();
+            res = new ArrayList<Expression>();
             for (int k = 0; k < proveIn.size(); ++k) {
-                expr = proveIn.elementAt(k);
+                expr = proveIn.get(k);
                 proved.add(expr);
                 boolean opers;
                 boolean exprType = false;
@@ -444,7 +444,7 @@ public class Main {
                     }
                 }
 
-                Vector<Expression> var = new Vector<Expression>();
+                ArrayList<Expression> var = new ArrayList<Expression>();
                 // expr is axiom
                 if (exprType) {
                     res.add(expr);

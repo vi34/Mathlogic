@@ -1,5 +1,6 @@
 package com.vi34;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -43,7 +44,7 @@ public class Expression {
             this.second = new Expression(other.second);
     }
 
-    Expression substitute(Vector<Expression> vec){
+    Expression substitute(ArrayList<Expression> vec){
         if(first != null) {
             first.substitute(vec);
             this.representation = first.representation;

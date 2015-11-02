@@ -1,4 +1,4 @@
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Created by vi34 on 08.12.14.
@@ -41,7 +41,7 @@ public class Expression {
             this.second = new Expression(other.second);
     }
 
-    Expression substitute(Vector<Expression> vec){
+    Expression substitute(ArrayList<Expression> vec){
         if(first != null) {
             first.substitute(vec);
             this.representation = first.representation;

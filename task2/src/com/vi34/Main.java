@@ -14,8 +14,8 @@ public class Main {
         Expression expr;
         Expression alphaExpr;
         Expression bettaExpr;
-        Vector<Expression> proved = new Vector<Expression>();
-        Vector<Expression> gamma = new Vector<Expression>();
+        ArrayList<Expression> proved = new ArrayList<Expression>();
+        ArrayList<Expression> gamma = new ArrayList<Expression>();
         parser = new ExpressionParser();
 
         s = in.nextLine();
@@ -198,7 +198,7 @@ public class Main {
                 }
 
 
-                Vector<Expression> var = new Vector<Expression>();
+                ArrayList<Expression> var = new ArrayList<Expression>();
                 // expr is gamma or axiom
                 if(exprType) {
 
