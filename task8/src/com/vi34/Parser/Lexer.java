@@ -1,15 +1,13 @@
-package Parser;
-
-import Ordinal.Ordinal;
+package com.vi34.Parser;
 
 /**
- * Created by izban on 30.05.2016.
+ * Created by vi34 on 29.10.2016.
  */
-class OrdinalLexer {
+class Lexer {
     private final String s;
     private int it;
 
-    OrdinalLexer(String s) {
+    Lexer(String s) {
         this.s = s.replace(" ", "");
         it = 0;
         nextToken();
@@ -24,8 +22,8 @@ class OrdinalLexer {
         cur = next();
     }
 
-    OrdinalToken curType() {
-        return OrdinalToken.type(cur);
+    Tokens curType() {
+        return Tokens.type(cur);
     }
 
     private String next() {

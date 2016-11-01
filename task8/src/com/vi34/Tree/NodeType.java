@@ -1,7 +1,7 @@
-package Tree;
+package com.vi34.Tree;
 
 /**
- * Created by izban on 30.05.2016.
+ * Created by vi34 on 29.10.2016.
  */
 public enum NodeType {
     VALUE,

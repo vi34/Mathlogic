@@ -1,11 +1,10 @@
-package Tree;
+package com.vi34.Tree;
 
-import Ordinal.Ordinal;
-
-import static Ordinal.Ordinal.*;
+import com.vi34.Ordinal.CNFOrdinal;
+import com.vi34.Ordinal.OrdinalCalc;
 
 /**
- * Created by izban on 30.05.2016.
+ * Created by vi34 on 29.10.2016.
  */
 public class NodeSubtract extends NodeBinary {
     public NodeSubtract(Node res, Node node) {
@@ -13,8 +12,8 @@ public class NodeSubtract extends NodeBinary {
     }
 
     @Override
-    protected Ordinal f(Ordinal a, Ordinal b) {
-        return subtract(a, b);
+    protected CNFOrdinal f(CNFOrdinal a, CNFOrdinal b) {
+        return OrdinalCalc.subtract(a, b);
     }
 
     @Override

@@ -1,9 +1,9 @@
-package Tree;
+package com.vi34.Tree;
 
-import Ordinal.Ordinal;
+import com.vi34.Ordinal.CNFOrdinal;
 
 /**
- * Created by izban on 30.05.2016.
+ * Created by vi34 on 29.10.2016.
  */
 public class NodeConstant extends Node {
     private final String s;
@@ -18,10 +18,10 @@ public class NodeConstant extends Node {
     }
 
     @Override
-    public Ordinal calcValue() {
+    public CNFOrdinal toCNF() {
         if (s.equals("w")) {
-            return new Ordinal(new Ordinal(Ordinal.ONE, Ordinal.ONE), Ordinal.ZERO);
+            return new CNFOrdinal(new CNFOrdinal(CNFOrdinal.ONE, CNFOrdinal.ONE), CNFOrdinal.ZERO);
         }
-        return new Ordinal(Long.parseLong(s));
+        return new CNFOrdinal(Long.parseLong(s));
     }
 }

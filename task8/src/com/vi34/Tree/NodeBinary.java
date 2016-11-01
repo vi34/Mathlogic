@@ -1,9 +1,9 @@
-package Tree;
+package com.vi34.Tree;
 
-import Ordinal.Ordinal;
+import com.vi34.Ordinal.CNFOrdinal;
 
 /**
- * Created by izban on 30.05.2016.
+ * Created by vi34 on 29.10.2016.
  */
 public abstract class NodeBinary extends Node {
     NodeBinary() {}
@@ -19,10 +19,10 @@ public abstract class NodeBinary extends Node {
         return "(" + children[0].toString() + ")" + type().toString() + "(" + children[1].toString() + ")";
     }
 
-    protected abstract Ordinal f(Ordinal a, Ordinal b);
+    protected abstract CNFOrdinal f(CNFOrdinal a, CNFOrdinal b);
 
     @Override
-    public Ordinal calcValue() {
-        return f(children[0].calcValue(), children[1].calcValue());
+    public CNFOrdinal toCNF() {
+        return f(children[0].toCNF(), children[1].toCNF());
     }
 }
