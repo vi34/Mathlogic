@@ -56,7 +56,7 @@ public class Model {
                 }
             }
             for (Model child: children) {
-                if (child.active && child.checkExpression(expr.first) && !(child.checkExpression(expr.second))) {
+                if (child.active && !child.checkExpression(expr)) {
                     return false;
                 }
             }

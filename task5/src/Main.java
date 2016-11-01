@@ -8,7 +8,7 @@ public class Main {
     ExpressionParser parser;
     Model mainModel;
     Vector<Model> allModels;
-    public static final String TEST = "false1.in";
+    public static final String TEST = "false2.in";
 
     public void solve() throws IOException {
         String s;
@@ -35,10 +35,14 @@ public class Main {
         Model model = allModels.get(index);
         if (model == allModels.lastElement()) {
             model.active = true;
+                //out.println("----"); //debug
+                //mainModel.print(out, 0);    // debug
             if (!mainModel.checkExpression(expr)) {
                 return false;
             }
             model.active = false;
+                //out.println("----"); //debug
+                //mainModel.print(out, 0);    // debug
             return mainModel.checkExpression(expr);
         }
 
@@ -71,12 +75,16 @@ public class Main {
 
     void generateModel(Model model, Vector<World> worlds) {
         for (World world: worlds) {
-            if (model.world.isSubset(world)) {
+            boolean emptyWorld = world.variables.size() == 0 && model == mainModel;
+            if (model.world.isSubset(world) || emptyWorld) {
                 model.addChild(world);
                 allModels.add(model.children.lastElement());
-                generateModel(allModels.lastElement(), worlds);
+                if (!emptyWorld) {
+                    generateModel(allModels.lastElement(), worlds);
+                }
                 model.subtree += model.children.lastElement().subtree + 1;
             }
+
         }
     }
 
