@@ -8,7 +8,7 @@ public class Main {
     ExpressionParser parser;
     Model mainModel;
     Vector<Model> allModels;
-    public static final String TEST = "false2.in";
+    public static final String TEST = "false5.in";
 
     public void solve() throws IOException {
         String s;
