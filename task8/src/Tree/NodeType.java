@@ -1,4 +1,4 @@
-package Task8.Tree;
+package Tree;
 
 /**
  * Created by izban on 30.05.2016.

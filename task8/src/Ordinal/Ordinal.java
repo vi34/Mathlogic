@@ -1,7 +1,7 @@
-package Task8.Ordinal;
+package Ordinal;
 
-import Task8.Parser.OrdinalParser;
-import static Task8.Ordinal.OrdinalType.CONSTANT;
+import Parser.OrdinalParser;
+import static Ordinal.OrdinalType.CONSTANT;
 
 /**
  * Created by izban on 30.05.2016.

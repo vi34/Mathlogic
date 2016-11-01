@@ -1,6 +1,6 @@
-package Task8.Parser;
+package Parser;
 
-import Task8.Ordinal.Ordinal;
+import Ordinal.Ordinal;
 
 /**
  * Created by izban on 30.05.2016.

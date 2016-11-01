@@ -1,9 +1,9 @@
-package Task8.Parser;
+package Parser;
 
-import Task8.Ordinal.Ordinal;
-import Task8.Tree.*;
+import Ordinal.Ordinal;
+import Tree.*;
 
-import static Task8.Parser.OrdinalToken.*;
+import static Parser.OrdinalToken.*;
 
 /**
  * Created by izban on 30.05.2016.

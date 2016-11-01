@@ -1,4 +1,4 @@
-package Task8.Ordinal;
+package Ordinal;
 
 /**
  * Created by izban on 30.05.2016.

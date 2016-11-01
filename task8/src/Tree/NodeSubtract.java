@@ -1,8 +1,8 @@
-package Task8.Tree;
+package Tree;
 
-import Task8.Ordinal.Ordinal;
+import Ordinal.Ordinal;
 
-import static Task8.Ordinal.Ordinal.*;
+import static Ordinal.Ordinal.*;
 
 /**
  * Created by izban on 30.05.2016.
