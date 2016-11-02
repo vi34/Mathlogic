@@ -48,11 +48,11 @@ public class Lexer {
                 if (!Character.isDigit(s.charAt(it))) {
                     throw new AssertionError();
                 }
-                long ans = 0;
+                long val = 0;
                 while (it < s.length() && Character.isDigit(s.charAt(it))) {
-                    ans = 10 * ans + (s.charAt(it++) - '0');
+                    val = 10 * val + (s.charAt(it++) - '0');
                 }
-                return Long.toString(ans);
+                return Long.toString(val);
         }
     }
 }

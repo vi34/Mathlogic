@@ -8,7 +8,7 @@ public class Main {
     ExpressionParser parser;
     Model mainModel;
     Vector<Model> allModels;
-    public static final String TEST = "false5.in";
+    public static final String TEST = "false1.in";
 
     public void solve() throws IOException {
         String s;
@@ -66,11 +66,33 @@ public class Main {
             for (int j = 0; j < variables.size(); ++j) {
                 if((i & (1 << j)) != 0) {
                     world.forceVariable(variables.get(j));
+                } else {
+                    Expression neg = new Expression();
+                    neg.first = variables.get(j);
+                    neg.representation = "!" + neg.first.representation;
+                    world.forceVariable(neg);
                 }
             }
             worlds.add(world);
         }
-        return worlds;
+
+        Vector<World> resWorlds = new Vector<World>();
+        for (World world: worlds) {
+            for (long[] i = {0}; i[0] < (1 << world.variables.size()); ++i[0]) {
+                World world1 = new World();
+                int[] j = {0};
+                world.variables.forEach(v -> {
+                    if ((i[0] & (1 << j[0])) != 0) {
+                        world1.forceVariable(v);
+                    }
+                    j[0]++;
+                });
+                resWorlds.add(world1);
+            }
+        }
+
+
+        return resWorlds;
     }
 
     void generateModel(Model model, Vector<World> worlds) {
@@ -84,7 +106,6 @@ public class Main {
                 }
                 model.subtree += model.children.lastElement().subtree + 1;
             }
-
         }
     }
 

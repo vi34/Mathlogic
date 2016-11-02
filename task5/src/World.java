@@ -15,6 +15,10 @@ public class World {
         variables.add(var.representation);
     }
 
+    void forceVariable(String var) {
+        variables.add(var);
+    }
+
     boolean isForced(Expression var) {
         return variables.contains(var.representation);
     }
