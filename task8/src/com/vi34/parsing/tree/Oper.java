@@ -1,17 +1,17 @@
-package com.vi34.Tree;
+package com.vi34.parsing.tree;
 
 /**
  * Created by vi34 on 29.10.2016.
  */
-public enum NodeType {
+public enum Oper {
     VALUE,
-    EXPONENT {
+    EXP {
         @Override
         public String toString() {
             return "^";
         }
     },
-    MULTIPLY {
+    MUL {
         @Override
         public String toString() {
             return "*";
@@ -23,7 +23,7 @@ public enum NodeType {
             return "+";
         }
     },
-    SUBTRACT {
+    SUB {
         @Override
         public String toString() {
             return "-";

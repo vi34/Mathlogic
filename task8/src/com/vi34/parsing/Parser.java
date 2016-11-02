@@ -1,8 +1,8 @@
-package com.vi34.Parser;
+package com.vi34.parsing;
 
-import com.vi34.Tree.*;
+import com.vi34.parsing.tree.*;
 
-import static com.vi34.Parser.Tokens.*;
+import static com.vi34.parsing.Token.*;
 
 /**
  * Created by vi34 on 29.10.2016.
@@ -10,16 +10,16 @@ import static com.vi34.Parser.Tokens.*;
 public class Parser {
     private Lexer lexer;
 
-    private Node parseExponent() {
-        Tokens cur = lexer.curType();
+    private Node exp() {
+        Token cur = lexer.curType();
         if (cur == LEFT_BRACKET) {
             lexer.nextToken();
-            Node res = parseExpression();
+            Node res = expr();
             if (lexer.curType() != RIGHT_BRACKET) throw new AssertionError();
             lexer.nextToken();
             return res;
         } if (cur == NUM || cur == W) {
-            Node res = new NodeConstant(lexer.curToken());
+            Node res = new Const(lexer.currentToken());
             lexer.nextToken();
             return res;
         } else {
@@ -28,41 +28,41 @@ public class Parser {
         }
     }
 
-    private Node parseMultiplier() {
-        Node res = parseExponent();
-        Tokens cur = lexer.curType();
+    private Node mul() {
+        Node res = exp();
+        Token cur = lexer.curType();
         if (cur == EXP) {
             lexer.nextToken();
-            return new NodeExp(res, parseMultiplier());
+            return new Exp(res, mul());
         }
         return res;
     }
 
-    private Node parseSummand() {
-        Node res = parseMultiplier();
+    private Node sum() {
+        Node res = mul();
         while (true) {
-            Tokens cur = lexer.curType();
+            Token cur = lexer.curType();
             if (cur == MUL) {
                 lexer.nextToken();
-                res = new NodeMultiply(res, parseMultiplier());
+                res = new Multiply(res, mul());
             } else break;
         }
         return res;
     }
 
-    private Node parseExpression() {
-        Node res = parseSummand();
+    private Node expr() {
+        Node res = sum();
         while (true) {
-            Tokens cur = lexer.curType();
+            Token cur = lexer.curType();
             if (cur != ADD && cur != SUB) {
                 break;
             }
             lexer.nextToken();
             if (cur == ADD) {
-                res = new NodeAdd(res, parseSummand());
+                res = new Add(res, sum());
             }
             if (cur == SUB) {
-                res = new NodeSubtract(res, parseSummand());
+                res = new Sub(res, sum());
             }
         }
         return res;
@@ -70,6 +70,6 @@ public class Parser {
 
     public Node parseOrdinal(String s) {
         lexer = new Lexer(s);
-        return parseExpression();
+        return expr();
     }
 }

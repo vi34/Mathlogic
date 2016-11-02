@@ -1,19 +1,20 @@
-package com.vi34.Ordinal;
+package com.vi34.ordinals;
 
 
-import static com.vi34.Ordinal.OrdinalCalc.fc;
-import static com.vi34.Ordinal.OrdinalCalc.fe;
+import static com.vi34.ordinals.OrdinalCalc.fc;
+import static com.vi34.ordinals.OrdinalCalc.fe;
 
 /**
  * Created by vi34 on 29.10.2016.
+ * Store Ordinal in Cantor Normal Form
+ * For every ordinal α ∈ 0, there are unique n, p ∈ ω, α1 > · · · > αn > 0,
+ * and x1, . . . , xn ∈ ω\{0} such that α > α1 and α = ω^α1*x1 + · · · + ω^αn*xn + p
  */
 public class CNFOrdinal implements Comparable<CNFOrdinal> {
-    public final static CNFOrdinal ZERO = new CNFOrdinal(0);
-    public final static CNFOrdinal ONE = new CNFOrdinal(1);
     private final long value;
     private final boolean isAtom;
     private final CNFOrdinal first;
-    private final CNFOrdinal rest; // (first.first*w^first.second + rest, where rest.first.second<first.second)
+    private final CNFOrdinal rest;
 
     public CNFOrdinal(long value) {
         this.value = value;
@@ -57,7 +58,7 @@ public class CNFOrdinal implements Comparable<CNFOrdinal> {
             return Long.toString(getValue());
         }
         StringBuilder res = new StringBuilder();
-        res.append("wsadf^(").append(fe(this)).append(")*").append(fc(this));
+        res.append("w^(").append(fe(this)).append(")*").append(fc(this));
         if (rest() != null) {
             res.append("+").append(rest().toString());
         }

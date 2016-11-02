@@ -1,10 +1,11 @@
-package com.vi34.Parser;
+package com.vi34.parsing;
 
 /**
  * Created by vi34 on 29.10.2016.
  */
-class Lexer {
+public class Lexer {
     private final String s;
+    private String current;
     private int it;
 
     Lexer(String s) {
@@ -13,17 +14,16 @@ class Lexer {
         nextToken();
     }
 
-    private String cur;
-    String curToken() {
-        return cur;
-    }
-
     void nextToken() {
-        cur = next();
+        current = next();
     }
 
-    Tokens curType() {
-        return Tokens.type(cur);
+    String currentToken() {
+        return current;
+    }
+
+    Token curType() {
+        return Token.type(current);
     }
 
     private String next() {

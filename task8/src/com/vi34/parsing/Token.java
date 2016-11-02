@@ -1,9 +1,9 @@
-package com.vi34.Parser;
+package com.vi34.parsing;
 
 /**
  * Created by vi34 on 29.10.2016.
  */
-public enum Tokens {
+public enum Token {
     ADD,
     SUB,
     MUL,
@@ -14,7 +14,7 @@ public enum Tokens {
     LEFT_BRACKET,
     RIGHT_BRACKET;
 
-    public static Tokens type(String s) {
+    public static Token type(String s) {
         switch (s) {
             case "=":
                 return EQ;

@@ -1,7 +1,7 @@
 package com.vi34;
 
-import com.vi34.Ordinal.CNFOrdinal;
-import com.vi34.Parser.Parser;
+import com.vi34.ordinals.CNFOrdinal;
+import com.vi34.parsing.Parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,12 +35,9 @@ public class Main {
     }
 
     public static String compute(String s) {
-        String a = s.substring(0, s.indexOf("="));
-        String b = s.substring(s.indexOf("=") + 1);
-        CNFOrdinal x = parser.parseOrdinal(a).toCNF();
-        CNFOrdinal y = parser.parseOrdinal(b).toCNF();
-        System.out.println(x);
-        System.out.println(y);
+        String[] eq = s.split("=");
+        CNFOrdinal x = parser.parseOrdinal(eq[0]).toCNF();
+        CNFOrdinal y = parser.parseOrdinal(eq[1]).toCNF();
         if (x.compareTo(y) == 0) {
             return EQUAL;
         }
