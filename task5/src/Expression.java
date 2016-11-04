@@ -41,26 +41,19 @@ public class Expression {
             this.second = new Expression(other.second);
     }
 
-    Expression substitute(Vector<Expression> vec){
-        if(first != null) {
-            first.substitute(vec);
-            this.representation = first.representation;
-            if(second != null) {
-                second.substitute(vec);
-                this.representation += oper + second.representation;
-                if(inBraces)
-                    this.representation = "(" + this.representation + ")";
-            } else {
-                this.representation = oper + first.representation;
-            }
-        } else {
-            Expression expr = vec.get(Integer.parseInt(this.representation) - 1);
-            this.first = expr.first;// hmm new?
-            this.second = expr.second;
-            this.oper = expr.oper;
-            this.representation = expr.representation;
-            this.inBraces = expr.inBraces;
-        }
-        return this;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Expression that = (Expression) o;
+
+        return representation != null ? representation.equals(that.representation) : that.representation == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return representation != null ? representation.hashCode() : 0;
     }
 }

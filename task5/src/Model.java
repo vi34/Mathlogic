@@ -1,7 +1,5 @@
-import com.sun.javafx.sg.prism.NGShape;
-
 import java.io.PrintWriter;
-import java.io.Writer;
+import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -12,9 +10,10 @@ public class Model {
     World world;
     boolean active;
     int subtree;
+    HashMap<Expression, Boolean> cache = new HashMap<>();
 
     Model(World world) {
-        children = new Vector<Model>();
+        children = new Vector<>();
         this.world = world;
         active = true;
         subtree = 0;
@@ -28,8 +27,30 @@ public class Model {
         if (!active) {
             return true;
         }
+        if (!cache.containsKey(expr)) {
+            cache.put(expr, cachedCheck(expr));
+        }
+        return cachedCheck(expr);
+    }
+
+    void print(PrintWriter out, int shift) {
+        for (int i = 0; i < shift; ++i) {
+            out.print(" ");
+        }
+        out.print("* ");
+        for (String variable: world.variables) {
+            out.print(variable + " ");
+        }
+        out.println();
+        for (Model child: children) {
+            if (child.active) {
+                child.print(out, shift + 2);
+            }
+        }
+    }
+
+    boolean cachedCheck(Expression expr) {
         if (expr.first == null) {
-            boolean test = world.isForced(expr);
             return world.isForced(expr);
         }
         if (expr.oper.equals("&")) {
@@ -62,21 +83,5 @@ public class Model {
             }
         }
         return true;
-    }
-
-    void print(PrintWriter out, int shift) {
-        for (int i = 0; i < shift; ++i) {
-            out.print(" ");
-        }
-        out.print("* ");
-        for (String variable: world.variables) {
-            out.print(variable + " ");
-        }
-        out.println();
-        for (Model child: children) {
-            if (child.active) {
-                child.print(out, shift + 2);
-            }
-        }
     }
 }

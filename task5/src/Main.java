@@ -3,31 +3,38 @@ import java.io.*;
 
 
 public class Main {
+    public static final String TEST = "false8.in";
     FastScanner in;
     PrintWriter out;
+    PrintWriter sout = new PrintWriter(System.out);
     ExpressionParser parser;
     Model mainModel;
     Vector<Model> allModels;
-    public static final String TEST = "false1.in";
+    long allModelsCount = 0;
+
 
     public void solve() throws IOException {
         String s;
         Expression expr;
         parser = new ExpressionParser();
-        allModels = new Vector<Model>();
+        allModels = new Vector<>();
         s = in.nextLine();
         s = s.replace(" ", "");
         expr = parser.parse(s);
 
-        Vector<World> world_combinations = generateWorlds(getVariables(expr));
-        mainModel = new Model(world_combinations.get(0));
+        Set<World> world_combinations = generateWorlds(getVariables(expr));
+        World world = new World();
+        mainModel = new Model(world);
         generateModel(mainModel, world_combinations);
-        System.out.println(allModels.size());
+        mainModel.print(sout, 0);
+        sout.flush();
+        System.out.println("Worlds count in full tree: " + allModels.size());
         if (checkAllModels(expr, 0)) {
             out.println("Формула общезначима");
         } else {
             mainModel.print(out, 0);
         }
+        System.out.println("Models count: " + allModelsCount);
 
     }
 
@@ -37,6 +44,10 @@ public class Main {
             model.active = true;
                 //out.println("----"); //debug
                 //mainModel.print(out, 0);    // debug
+            allModelsCount += 2;
+            if (allModelsCount % 10000 == 0) {
+                System.out.println("Models checked: " + allModelsCount);
+            }
             if (!mainModel.checkExpression(expr)) {
                 return false;
             }
@@ -59,8 +70,8 @@ public class Main {
 
     }
 
-    Vector<World> generateWorlds(Vector<Expression> variables) {
-        Vector<World> worlds = new Vector<World>();
+    Set<World> generateWorlds(Vector<Expression> variables) {
+        Set<World> worlds = new HashSet<>();
         for (long i = 0; i < (1 << variables.size()); ++i){
             World world = new World();
             for (int j = 0; j < variables.size(); ++j) {
@@ -76,7 +87,7 @@ public class Main {
             worlds.add(world);
         }
 
-        Vector<World> resWorlds = new Vector<World>();
+        Set<World> resWorlds = new HashSet<>();
         for (World world: worlds) {
             for (long[] i = {0}; i[0] < (1 << world.variables.size()); ++i[0]) {
                 World world1 = new World();
@@ -95,7 +106,7 @@ public class Main {
         return resWorlds;
     }
 
-    void generateModel(Model model, Vector<World> worlds) {
+    void generateModel(Model model, Set<World> worlds) {
         for (World world: worlds) {
             boolean emptyWorld = world.variables.size() == 0 && model == mainModel;
             if (model.world.isSubset(world) || emptyWorld) {
