@@ -6,7 +6,7 @@ import java.util.Vector;
 
 
 public class Main {
-    public static final String TEST = "false7.in";
+    public static final String TEST = "true3.in";
     FastScanner in;
     PrintWriter out;
     PrintWriter sout = new PrintWriter(System.out);
@@ -81,6 +81,7 @@ public class Main {
         if (model.subtree != 0) {
             next = index + 1 + model.subtree;
         }
+        next = Math.min(allModels.size() - 1, next);
         if (!checkAllModels(expr,next))
             return false;
 
@@ -122,8 +123,9 @@ public class Main {
     void generateModel(Model model, Set<World> worlds, int maxSize) {
         for (World world: worlds) {
             boolean emptyWorld = world.variables.size() == 0 && model == mainModel;
-            if (model.world.isSubset(world) && world.variables.size() <= maxSize ||
-                    model.world.variables.equals(world.variables) && world.variables.size() < maxSize - 1) {
+            if (model.world.isSubset(world) && world.variables.size() <= maxSize
+                    && (world.variables.size() == (model.world.variables.size() + 1))
+                    || model.world.variables.equals(world.variables) && world.variables.size() < maxSize - 1) {
                 model.addChild(world);
                 allModels.add(model.children.lastElement());
                 if (!model.world.variables.equals(world.variables)) {
