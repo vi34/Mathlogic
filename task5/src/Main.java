@@ -1,9 +1,12 @@
-import java.util.*;
 import java.io.*;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
 
 
 public class Main {
-    public static final String TEST = "true2.in";
+    public static final String TEST = "false7.in";
     FastScanner in;
     PrintWriter out;
     PrintWriter sout = new PrintWriter(System.out);
@@ -30,6 +33,7 @@ public class Main {
         mainModel.print(sout, 0);
         sout.flush();
         System.out.println("Worlds count in full tree: " + allModels.size());
+        System.out.println("Models count estimate: " + (modelsCountEstimate(mainModel) -1));
         if (checkAllModels(expr, 0)) {
             out.println("Формула общезначима");
         } else {
@@ -39,6 +43,20 @@ public class Main {
 
     }
 
+    long modelsCountEstimate(Model model) {
+        long estimate;
+        if (model.children.size() != 0) {
+            estimate = 1;
+            for (Model child : model.children) {
+                estimate *= modelsCountEstimate(child);
+            }
+            estimate++;
+        } else {
+            estimate = 2;
+        }
+        return estimate;
+    }
+
     boolean checkAllModels(Expression expr, int index) {
         Model model = allModels.get(index);
         if (model == allModels.lastElement()) {
@@ -46,7 +64,7 @@ public class Main {
                 //out.println("----"); //debug
                 //mainModel.print(out, 0);    // debug
             allModelsCount += 2;
-            if (allModelsCount % 100000 == 0) {
+            if (allModelsCount % 100_000 == 0) {
                 System.out.println("Models checked: " + allModelsCount);
             }
             if (!mainModel.checkExpression(expr)) {
@@ -105,7 +123,7 @@ public class Main {
         for (World world: worlds) {
             boolean emptyWorld = world.variables.size() == 0 && model == mainModel;
             if (model.world.isSubset(world) && world.variables.size() <= maxSize ||
-                    model.world.variables.equals(world.variables) && world.variables.size() < maxSize) {
+                    model.world.variables.equals(world.variables) && world.variables.size() < maxSize - 1) {
                 model.addChild(world);
                 allModels.add(model.children.lastElement());
                 if (!model.world.variables.equals(world.variables)) {
@@ -121,7 +139,7 @@ public class Main {
 
     public Vector<Expression> getVariables(Expression expression) {
         Set<String> s = new HashSet<String>();
-        Vector<Expression> res = new Vector<Expression>();
+        Vector<Expression> res = new Vector<>();
         search(expression, s, res);
         return res;
     }
