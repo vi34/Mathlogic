@@ -3,7 +3,7 @@ import java.io.*;
 
 
 public class Main {
-    public static final String TEST = "false8.in";
+    public static final String TEST = "true2.in";
     FastScanner in;
     PrintWriter out;
     PrintWriter sout = new PrintWriter(System.out);
@@ -22,10 +22,11 @@ public class Main {
         s = s.replace(" ", "");
         expr = parser.parse(s);
 
-        Set<World> world_combinations = generateWorlds(getVariables(expr));
+        Vector<Expression> variables = getVariables(expr);
+        Set<World> world_combinations = generateWorlds(variables);
         World world = new World();
         mainModel = new Model(world);
-        generateModel(mainModel, world_combinations);
+        generateModel(mainModel, world_combinations, variables.size());
         mainModel.print(sout, 0);
         sout.flush();
         System.out.println("Worlds count in full tree: " + allModels.size());
@@ -41,31 +42,31 @@ public class Main {
     boolean checkAllModels(Expression expr, int index) {
         Model model = allModels.get(index);
         if (model == allModels.lastElement()) {
-            model.active = true;
+            model.setActive(true);
                 //out.println("----"); //debug
                 //mainModel.print(out, 0);    // debug
             allModelsCount += 2;
-            if (allModelsCount % 10000 == 0) {
+            if (allModelsCount % 100000 == 0) {
                 System.out.println("Models checked: " + allModelsCount);
             }
             if (!mainModel.checkExpression(expr)) {
                 return false;
             }
-            model.active = false;
+            model.setActive(false);
                 //out.println("----"); //debug
                 //mainModel.print(out, 0);    // debug
             return mainModel.checkExpression(expr);
         }
 
-        model.active = false;
+        model.setActive(false);
         int next = index + 1;
         if (model.subtree != 0) {
-            next = index + model.subtree;
+            next = index + 1 + model.subtree;
         }
         if (!checkAllModels(expr,next))
             return false;
 
-        model.active = true;
+        model.setActive(true);
         return checkAllModels(expr, index + 1);
 
     }
@@ -77,17 +78,12 @@ public class Main {
             for (int j = 0; j < variables.size(); ++j) {
                 if((i & (1 << j)) != 0) {
                     world.forceVariable(variables.get(j));
-                } else {
-                    Expression neg = new Expression();
-                    neg.first = variables.get(j);
-                    neg.representation = "!" + neg.first.representation;
-                    world.forceVariable(neg);
                 }
             }
             worlds.add(world);
         }
 
-        Set<World> resWorlds = new HashSet<>();
+      /*  Set<World> resWorlds = new HashSet<>();
         for (World world: worlds) {
             for (long[] i = {0}; i[0] < (1 << world.variables.size()); ++i[0]) {
                 World world1 = new World();
@@ -100,21 +96,24 @@ public class Main {
                 });
                 resWorlds.add(world1);
             }
-        }
+        }*/
 
-
-        return resWorlds;
+        return worlds;
     }
 
-    void generateModel(Model model, Set<World> worlds) {
+    void generateModel(Model model, Set<World> worlds, int maxSize) {
         for (World world: worlds) {
             boolean emptyWorld = world.variables.size() == 0 && model == mainModel;
-            if (model.world.isSubset(world) || emptyWorld) {
+            if (model.world.isSubset(world) && world.variables.size() <= maxSize ||
+                    model.world.variables.equals(world.variables) && world.variables.size() < maxSize) {
                 model.addChild(world);
                 allModels.add(model.children.lastElement());
-                if (!emptyWorld) {
-                    generateModel(allModels.lastElement(), worlds);
+                if (!model.world.variables.equals(world.variables)) {
+                    generateModel(allModels.lastElement(), worlds, maxSize);
+                } else {
+                    generateModel(allModels.lastElement(), worlds, maxSize - 1);
                 }
+
                 model.subtree += model.children.lastElement().subtree + 1;
             }
         }

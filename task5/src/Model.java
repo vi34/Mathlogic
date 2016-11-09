@@ -8,29 +8,32 @@ import java.util.Vector;
 public class Model {
     Vector<Model> children;
     World world;
-    boolean active;
+    private boolean active;
     int subtree;
+    Model parent;
     HashMap<Expression, Boolean> cache = new HashMap<>();
 
     Model(World world) {
         children = new Vector<>();
         this.world = world;
-        active = true;
+        setActive(true);
         subtree = 0;
     }
 
     void addChild(World world) {
-        children.add(new Model(world));
+        Model model = new Model(world);
+        model.parent = this;
+        children.add(model);
     }
 
     boolean checkExpression (Expression expr) {
-        if (!active) {
+        if (!isActive()) {
             return true;
         }
         if (!cache.containsKey(expr)) {
             cache.put(expr, cachedCheck(expr));
         }
-        return cachedCheck(expr);
+        return cache.get(expr);
     }
 
     void print(PrintWriter out, int shift) {
@@ -43,10 +46,21 @@ public class Model {
         }
         out.println();
         for (Model child: children) {
-            if (child.active) {
+            if (child.isActive()) {
                 child.print(out, shift + 2);
             }
         }
+    }
+
+    boolean deepCheck(Expression expr) {
+        boolean res = false;
+        res |= checkExpression(expr);
+        for (Model child: children) {
+            if (child.isActive()) {
+                res |= child.deepCheck(expr);
+            }
+        }
+        return res;
     }
 
     boolean cachedCheck(Expression expr) {
@@ -64,7 +78,7 @@ public class Model {
                 return false;
             }
             for (Model child: children) {
-                if (child.active && child.checkExpression(expr.first)) {
+                if (child.isActive() && child.deepCheck(expr.first)) {
                     return false;
                 }
             }
@@ -77,11 +91,29 @@ public class Model {
                 }
             }
             for (Model child: children) {
-                if (child.active && !child.checkExpression(expr)) {
+                if (child.isActive() && !child.checkExpression(expr)) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        if (active != this.active) {
+            invalidateCaches(this);
+        }
+        this.active = active;
+    }
+
+    public void invalidateCaches(Model model) {
+        model.cache.clear();
+        if (model.parent != null) {
+           invalidateCaches(model.parent);
+        }
     }
 }
